@@ -1,183 +1,177 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-struct cvor {
-    char ime[20];
-    char prezime[20];
-    struct cvor* Next;
+struct polinom {
+	int koeficjent;
+	int potencija;
+	struct polinom* Next;
 };
 
-int UnosPocetak(char ime[], char prezime[], struct cvor* p);
-int Ispis(struct cvor* p);
-struct cvor* TraziPrethodnog(char prezime[], struct cvor* p);
-int UnosIza(char imeT[], char prezimeT[], char ime[], char prezime[], struct cvor* p);
-int UnosIspred(char imeT[], char prezimeT[], char ime[], char prezime[], struct cvor* p);
-int SortiraniUnos(char ime[], char prezime[], struct cvor* p);
-int IspisDatoteka(FILE* f, struct cvor* p);
-int CitanjeDatoteka(FILE* f, struct cvor* p);
+int SortiraniUnos(int koe, int pot, struct polinom* p);
+int Ispis(struct polinom* p);
+
+int ZbrojiPolinome(struct polinom* p, struct polinom* q, struct polinom *suma);
+int PomnoziPolinome(struct polinom* p, struct polinom* q, struct polinom* produkt);
 
 int main() {
-    FILE* f;
-    struct cvor Head1, Head2, Head3;
-    Head1.Next = NULL;
-    Head2.Next = NULL;
-    Head3.Next = NULL;
 
-    UnosPocetak("Mate", "Matic", &Head1);
-    UnosPocetak("Jure", "Juric", &Head1);
-    Ispis(&Head1);
+	struct polinom Head1, Head2, Suma, Produkt;
+	Head1.Next = NULL;
+	Head2.Next = NULL;
+	Suma.Next = NULL;
+	Produkt.Next = NULL;
 
-    UnosIza("Mate", "Matic", "Ivan", "Ivic", &Head1);
-    Ispis(&Head1);
+	SortiraniUnos(10, 3, &Head1);
+	SortiraniUnos(-10, 0, &Head1);
+	SortiraniUnos(-10, 323, &Head1);
+	SortiraniUnos(10, 1, &Head1);
+	SortiraniUnos(0, 123, &Head1);
+	Ispis(&Head1);
 
-    UnosIspred("Mate", "Matic", "Duje", "Dujic", &Head1);
-    Ispis(&Head1);
+	SortiraniUnos(10, 3, &Head2);
+	SortiraniUnos(-10, 0, &Head2);
+	SortiraniUnos(-10, 323, &Head2);
+	SortiraniUnos(10, 1, &Head2);
+	SortiraniUnos(0, 123, &Head2);
+	Ispis(&Head2);
 
-    SortiraniUnos("Ivano", "Ivic", &Head2);
-    SortiraniUnos("Zoran", "Zoric", &Head2);
-    SortiraniUnos("Ana", "Anic", &Head2);
-    SortiraniUnos("Karlo", "Karlic", &Head2);
-    Ispis(&Head2);
+	ZbrojiPolinome(&Head1, &Head2, &Suma);
+	Ispis(&Suma);
 
-    f = fopen("Osobe.txt", "w");
-    if (f == NULL) {
-        printf("Greska!\n");
-        return -1;
-    }
+	PomnoziPolinome(&Head1, &Head2, &Produkt);
+	Ispis(&Produkt);
 
-    IspisDatoteka(f, &Head2);
-    fclose(f);
-
-    f = fopen("Osobe.txt", "r");
-    if (f == NULL) {
-        printf("Greska!\n");
-        return -1;
-    }
-
-    CitanjeDatoteka(f, &Head3);
-    Ispis(&Head3);
-    fclose(f);
-
-    return 0;
+	return 0;
 }
 
-int UnosPocetak(char ime[], char prezime[], struct cvor* p) {
-    struct cvor* q = (struct cvor*)malloc(sizeof(struct cvor));
-    if (q == NULL) {
-        printf("Greska!\n");
-        return 0;
-    }
+int Ispis(struct polinom* p) {
 
-    strcpy(q->ime, ime);
-    strcpy(q->prezime, prezime);
+	printf("Polinom:");
+	int i = 0;
 
-    q->Next = p->Next;
-    p->Next = q;
+	while (p->Next != NULL) {
 
-    return 0;
+		if (p->Next->potencija != 0) {
+			if (p->Next != NULL && p->Next->koeficjent > 0 && i != 0 && p->Next->koeficjent != 0) {
+				printf(" + ");
+			}
+			if (p->Next != NULL && p->Next->koeficjent < 0 && p->Next->koeficjent != 0) {
+				printf(" - ");
+			}
+
+			if (p->Next != NULL && p->Next->koeficjent > 0 && p->Next->koeficjent != 0) {
+				printf("%dx^%d", p->Next->koeficjent, p->Next->potencija);
+			}
+			if (p->Next != NULL && p->Next->koeficjent < 0 && p->Next->koeficjent != 0) {
+				printf("%dx^%d", p->Next->koeficjent * -1, p->Next->potencija);
+			}
+		}
+		else {
+			if (p->Next != NULL && p->Next->koeficjent > 0 && i != 0 && p->Next->koeficjent != 0) {
+				printf(" + ");
+			}
+			if (p->Next != NULL && p->Next->koeficjent < 0 && p->Next->koeficjent != 0) {
+				printf(" - ");
+			}
+
+			if (p->Next != NULL && p->Next->koeficjent > 0 && p->Next->koeficjent != 0) {
+				printf("%d", p->Next->koeficjent);
+			}
+			if (p->Next != NULL && p->Next->koeficjent < 0 && p->Next->koeficjent != 0) {
+				printf("%d", p->Next->koeficjent * -1);
+			}
+		}
+
+		i++;
+		p = p->Next;
+	}
+
+	printf("\n");
+
+	return 0;
 }
 
-int Ispis(struct cvor* p) {
-    printf("Lista je:\n");
-    while (p->Next != NULL) {
-        printf("%s %s\n", p->Next->ime, p->Next->prezime);
-        p = p->Next;
-    }
-    printf("\n");
-    return 0;
+SortiraniUnos(int koe, int pot, struct polinom* p) {
+
+	while (p->Next != NULL && p->Next->potencija > pot ) {
+		p = p->Next;
+	}
+
+	struct polinom* q = (struct polinom*)malloc(sizeof(struct polinom));
+	if (q == NULL) {
+		printf("Greska!");
+		return 0;
+	}
+
+	q->koeficjent = koe;
+	q->potencija = pot;
+
+	q->Next = p->Next;
+	p->Next = q;
+
+	return 0;
 }
 
-struct cvor* TraziPrethodnog(char prezime[], struct cvor* p) {
-    while (p->Next != NULL && strcmp(p->Next->prezime, prezime) != 0) {
-        p = p->Next;
-    }
+int ZbrojiPolinome(struct polinom* p, struct polinom* q, struct polinom* suma) {
 
-    if (p->Next != NULL) {
-        return p;
-    }
+	while (p->Next != NULL && q->Next != NULL) {
 
-    return NULL;
+		if (p->Next->potencija == q->Next->potencija) {
+			SortiraniUnos(p->Next->koeficjent + q->Next->koeficjent, p->Next->potencija, suma);
+			p = p->Next;
+			q = q->Next;
+		}
+		else if (p->Next->potencija > q->Next->potencija) {
+			SortiraniUnos(p->Next->koeficjent, p->Next->potencija, suma);
+			p = p->Next;
+		}
+		else{
+			SortiraniUnos(q->Next->koeficjent, q->Next->potencija, suma);
+			q = q->Next;
+		}
+	}
+
+	while (p->Next != NULL) {
+		SortiraniUnos(p->Next->koeficjent, p->Next->potencija, suma);
+		p = p->Next;
+	}
+
+	while (q->Next != NULL) {
+		SortiraniUnos(q->Next->koeficjent, q->Next->potencija, suma);
+		q = q->Next;
+	}
+
+	return 0;
 }
 
-int UnosIza(char imeT[], char prezimeT[], char ime[], char prezime[], struct cvor* p) {
-    p = TraziPrethodnog(prezimeT, p);
-    if (p == NULL) {
-        printf("Element nije pronadjen!\n");
-        return 0;
-    }
-    p = p->Next;
+int PomnoziPolinome(struct polinom* p, struct polinom* q, struct polinom* produkt) {
 
-    struct cvor* q = (struct cvor*)malloc(sizeof(struct cvor));
-    if (q == NULL) {
-        printf("Greska!\n");
-        return 0;
-    }
+	while (p->Next != NULL && q->Next != NULL) {
 
-    strcpy(q->ime, ime);
-    strcpy(q->prezime, prezime);
+		if (p->Next->potencija == q->Next->potencija) {
+			SortiraniUnos(p->Next->koeficjent * q->Next->koeficjent, p->Next->potencija, produkt);
+			p = p->Next;
+			q = q->Next;
+		}
+		else if (p->Next->potencija > q->Next->potencija) {
+			SortiraniUnos(p->Next->koeficjent, p->Next->potencija, produkt);
+			p = p->Next;
+		}
+		else {
+			SortiraniUnos(q->Next->koeficjent, q->Next->potencija, produkt);
+			q = q->Next;
+		}
+	}
 
-    q->Next = p->Next;
-    p->Next = q;
+	while (p->Next != NULL) {
+		SortiraniUnos(p->Next->koeficjent, p->Next->potencija, produkt);
+		p = p->Next;
+	}
 
-    return 0;
-}
+	while (q->Next != NULL) {
+		SortiraniUnos(q->Next->koeficjent, q->Next->potencija, produkt);
+		q = q->Next;
+	}
 
-int UnosIspred(char imeT[], char prezimeT[], char ime[], char prezime[], struct cvor* p) {
-    p = TraziPrethodnog(prezimeT, p);
-    if (p == NULL) {
-        printf("Element nije pronadjen!\n");
-        return 0;
-    }
-
-    struct cvor* q = (struct cvor*)malloc(sizeof(struct cvor));
-    if (q == NULL) {
-        printf("Greska!\n");
-        return 0;
-    }
-
-    strcpy(q->ime, ime);
-    strcpy(q->prezime, prezime);
-
-    q->Next = p->Next;
-    p->Next = q;
-
-    return 0;
-}
-
-int SortiraniUnos(char ime[], char prezime[], struct cvor* p) {
-    while (p->Next != NULL && strcmp(p->Next->prezime, prezime) < 0) {
-        p = p->Next;
-    }
-
-    struct cvor* q = (struct cvor*)malloc(sizeof(struct cvor));
-    if (q == NULL) {
-        printf("Greska!\n");
-        return 0;
-    }
-
-    strcpy(q->ime, ime);
-    strcpy(q->prezime, prezime);
-
-    q->Next = p->Next;
-    p->Next = q;
-
-    return 0;
-}
-
-int IspisDatoteka(FILE* f, struct cvor* p) {
-    while (p->Next != NULL) {
-        fprintf(f, "%s %s\n", p->Next->ime, p->Next->prezime);
-        p = p->Next;
-    }
-    return 0;
-}
-
-int CitanjeDatoteka(FILE* f, struct cvor* p) {
-    char ime[20], prezime[20];
-    while (fscanf(f, "%s %s", ime, prezime) == 2) {
-        SortiraniUnos(ime, prezime, p);
-    }
-    return 0;
+	return 0;
 }
